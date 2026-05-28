@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portugiesisch-Trainer</title>
+  <style>
+    :root {
+      --bg: #f7f6f2;
+      --surface: #ffffff;
+      --surface-2: #f1eee8;
+      --text: #28251d;
+      --muted: #6f6a61;
+      --border: #d8d3ca;
+      --primary: #01696f;
+      --primary-hover: #0c4e54;
+      --danger: #a13544;
+      --shadow: 0 14px 40px rgba(26, 31, 30, 0.10);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(180deg, #f7f6f2 0%, #efebe4 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.9rem, 1.4rem + 1.4vw, 2.8rem);
+      line-height: 1.1;
+    }
+
+    p.lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+      max-width: 60ch;
+      line-height: 1.6;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 210px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      font: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(1, 105, 111, 0.12);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 132px;
+      transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .play {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .play:hover { background: var(--primary-hover); }
+
+    .stop {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .meta {
+      margin-top: 22px;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(1, 105, 111, 0.10);
+      color: var(--primary);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    select {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      min-width: min(100%, 300px);
+    }
+
+    @media (max-width: 640px) {
+      .card { padding: 20px; }
+      button, select { width: 100%; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">pt-BR Trainer</div>
+    <h1>Brasilianisches Portugiesisch hören und üben</h1>
+    <p class="lead">
+      Gib einen Satz ein und lasse ihn vom Browser im brasilianischen Portugiesisch vorlesen. Die Seite nutzt die Web Speech API und versucht bevorzugt eine Stimme mit dem Sprachcode "pt-BR" zu wählen.
+    </p>
+
+    <label for="text">Dein Übungstext</label>
+    <textarea id="text" placeholder="Zum Beispiel: Olá! Eu gostaria de praticar português do Brasil.">Olá! Tudo bem? Eu gostaria de praticar português do Brasil.</textarea>
+
+    <div class="row">
+      <select id="voiceSelect" aria-label="Brasilianische Stimme auswählen">
+        <option>Stimmen werden geladen ...</option>
+      </select>
+    </div>
+
+    <div class="controls">
+      <button class="play" id="playBtn" type="button">Play</button>
+      <button class="stop" id="stopBtn" type="button">Stop</button>
+    </div>
+
+    <div class="status" id="status" role="status" aria-live="polite">
+      Bereit. Gib Text ein und drücke auf "Play".
+    </div>
+
+    <div class="meta">
+      <div>Bevorzugte Sprache: "pt-BR".</div>
+      <div>Hinweis: Welche Stimmen verfügbar sind, hängt vom Browser und Betriebssystem ab.</div>
+    </div>
+  </main>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const textEl = document.getElementById('text');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const statusEl = document.getElementById('status');
+    const voiceSelect = document.getElementById('voiceSelect');
+    let voices = [];
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    function scoreVoice(voice) {
+      const lang = (voice.lang || '').toLowerCase();
+      const name = (voice.name || '').toLowerCase();
+      let score = 0;
+
+      if (lang === 'pt-br') score += 1000;
+      else if (lang.startsWith('pt-br')) score += 950;
+      else if (lang === 'pt-pt') score += 700;
+      else if (lang.startsWith('pt')) score += 600;
+
+      if (name.includes('brazil') || name.includes('brasil')) score += 120;
+      if (name.includes('portuguese')) score += 40;
+      if (voice.localService) score += 10;
+      if (voice.default && lang.startsWith('pt')) score += 5;
+
+      if (lang.startsWith('de')) score -= 1000;
+
+      return score;
+    }
+
+    function sortedPreferredVoices(list) {
+      return [...list]
+        .filter(v => (v.lang || '').toLowerCase().startsWith('pt') || (v.name || '').toLowerCase().includes('brazil') || (v.name || '').toLowerCase().includes('brasil'))
+        .sort((a, b) => scoreVoice(b) - scoreVoice(a));
+    }
+
+    function bestVoice() {
+      const preferred = sortedPreferredVoices(voices);
+      return preferred.length ? preferred[0] : null;
+    }
+
+    async function loadVoices() {
+      if (!('speechSynthesis' in window)) return [];
+      let current = synth.getVoices();
+      if (current.length) return current;
+
+      await Promise.race([
+        new Promise(resolve => synth.addEventListener('voiceschanged', resolve, { once: true })),
+        new Promise(resolve => setTimeout(resolve, 1200))
+      ]);
+
+      return synth.getVoices();
+    }
+
+    async function populateVoices() {
+      if (!('speechSynthesis' in window)) {
+        voiceSelect.innerHTML = '<option>Web Speech API nicht verfügbar</option>';
+        playBtn.disabled = true;
+        stopBtn.disabled = true;
+        setStatus('Dieser Browser unterstützt die Sprachsynthese nicht.');
+        return;
+      }
+
+      voices = await loadVoices();
+      const filtered = sortedPreferredVoices(voices);
+      voiceSelect.innerHTML = '';
+
+      if (!filtered.length) {
+        const option = document.createElement('option');
+        option.textContent = 'Keine portugiesische Stimme gefunden';
+        voiceSelect.appendChild(option);
+        playBtn.disabled = true;
+        setStatus('Es wurde keine portugiesische Stimme gefunden. Bitte installiere eine pt-BR-Stimme im Betriebssystem oder Browser.');
+        return;
+      }
+
+      playBtn.disabled = false;
+
+      filtered.forEach((voice, index) => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        if (index === 0) option.selected = true;
+        voiceSelect.appendChild(option);
+      });
+
+      const top = filtered[0];
+      setStatus(`Bereit. Bevorzugte Stimme: ${top.name} (${top.lang}).`);
+    }
+
+    function selectedVoice() {
+      const selected = voiceSelect.value;
+      return voices.find(v => v.name === selected) || bestVoice();
+    }
+
+    function speakText() {
+      const text = textEl.value.trim();
+      if (!text) {
+        setStatus('Bitte gib zuerst einen Text ein.');
+        textEl.focus();
+        return;
+      }
+
+      if (!('speechSynthesis' in window)) {
+        setStatus('Die Sprachsynthese wird in diesem Browser nicht unterstützt.');
+        return;
+      }
+
+      const voice = selectedVoice();
+      if (!voice) {
+        setStatus('Keine portugiesische Stimme verfügbar.');
+        return;
+      }
+
+      synth.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = voice;
+      utterance.lang = voice.lang || 'pt-BR';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        setStatus(`Wiedergabe läuft mit ${voice.name} (${voice.lang}).`);
+      };
+
+      utterance.onend = () => {
+        setStatus('Fertig. Du kannst den nächsten Satz abspielen.');
+      };
+
+      utterance.onerror = (event) => {
+        setStatus(`Fehler bei der Sprachsynthese: ${event.error || 'unbekannt'}.`);
+      };
+
+      synth.speak(utterance);
+    }
+
+    playBtn.addEventListener('click', speakText);
+    stopBtn.addEventListener('click', () => {
+      synth.cancel();
+      setStatus('Wiedergabe gestoppt.');
+    });
+
+    populateVoices();
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+  </script>
+</body>
+</html>
